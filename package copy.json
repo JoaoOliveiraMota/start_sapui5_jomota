@@ -1,0 +1,48 @@
+{
+  "name": "initial-config-sapui5",
+  "displayName": "SAPUI5 Initial Config",
+  "description": "sapui5-initial-config <o_o>",
+  "icon": "images/appIcon.png",
+  "version": "0.0.33",
+  "publisher": "JoaoMota",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JoaoOliveiraMota/start_sapui5_jomota.git"
+  },
+  "engines": {
+    "vscode": "^1.78.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "initial-config-sapui5.initialConfigSAPUI5",
+        "title": "SAPUI5 Initial Config"
+      },
+      {
+        "command": "initial-config-sapui5.createView",
+        "title": "SAPUI5 Create New View"
+      }
+    ]
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "node ./test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.78.0",
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "eslint": "^8.39.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "typescript": "^5.0.4",
+    "@vscode/test-electron": "^2.3.0"
+  }
+}

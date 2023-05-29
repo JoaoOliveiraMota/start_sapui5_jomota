@@ -1,0 +1,62 @@
+{
+  "name": "initial-config-sapui5",
+  "displayName": "SAPUI5 Initial Config",
+  "description": "Simplified Setup for SAPUI5 Developmen",
+  "icon": "images/appIcon.png",
+  "version": "0.0.48",
+  "publisher": "JoaoMota",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JoaoOliveiraMota/start_sapui5_jomota.git"
+  },
+  "engines": {
+    "vscode": "^1.78.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "initial-config-sapui5.initialConfigSAPUI5",
+        "title": "SAPUI5 Initial Config"
+      },
+      {
+        "command": "initial-config-sapui5.createView",
+        "title": "SAPUI5 Create New View"
+      },
+      {
+        "command": "initial-config-sapui5.translatei18n",
+        "title": "SAPUI5 Translate i18n"
+      },
+      {
+        "command": "initial-config-sapui5.getWordsNotDeclared",
+        "title": "SAPUI5 Find Missing i18n Declarations"
+      }
+    ]
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "node ./test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.78.0",
+    "@vscode/test-electron": "^2.3.0",
+    "eslint": "^8.39.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "google-translate-api": "^2.3.0",
+    "node-fetch": "^3.3.1",
+    "translate-google-free": "^0.2.0"
+  }
+}
