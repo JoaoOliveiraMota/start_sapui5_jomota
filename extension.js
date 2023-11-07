@@ -21,18 +21,38 @@ function activate(context) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
+	function checkProjectDirectory() {
+		// Obtenha o diretório atual
+		const activeEditor = vscode.window.activeTextEditor;
+		const currentFile = activeEditor.document.uri.fsPath;
+
+		function getWebappPath(fullPath) {
+			const parts = fullPath.split(path.sep);
+			const webappIndex = parts.indexOf('webapp');
+			if (webappIndex !== -1) {
+				return path.join(...parts.slice(0, webappIndex + 1));
+			}
+			throw new Error('Webapp folder not found...');
+		}
+
+		const webappPath = getWebappPath(currentFile);
+		return webappPath;
+	}
+
 	let disposable = vscode.commands.registerCommand('initial-config-sapui5.initialConfigSAPUI5', function () {
 		const activeEditor = vscode.window.activeTextEditor;
-		// const workspacePath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-		// console.log(workspacePath);
+
+		var webappPath = checkProjectDirectory();
+
 		if (activeEditor) {
 			try {
 				// Obtém o caminho completo do arquivo do editor de texto ativo
-				const currentFile = activeEditor.document.uri.fsPath;
+				// const currentFile = activeEditor.document.uri.fsPath;
 				// Obtém a pasta da extensão para ir buscar os resources
 				const extensionPath = context.extensionPath;
 
-				const modelsPath = path.join(path.dirname(currentFile), 'model', 'models.js');
+				// const modelsPath = path.join(path.dirname(currentFile), 'model', 'models.js');
+				const modelsPath = path.join(webappPath, 'model', 'models.js');
 				if (fs.existsSync(modelsPath)) {
 					const newContent = `sap.ui.define([
 							"sap/ui/model/json/JSONModel",
@@ -70,7 +90,7 @@ function activate(context) {
 				}
 
 				//COMPONENT
-				const componentPath = path.join(path.dirname(currentFile), 'Component.js');
+				const componentPath = path.join(webappPath, 'Component.js');
 				if (fs.existsSync(componentPath)) {
 					// Obter o ID do projeto a partir do nome do arquivo
 					const componentContent = fs.readFileSync(componentPath, 'utf-8');
@@ -115,9 +135,9 @@ function activate(context) {
 
 					// Escrever o novo conteúdo no arquivo Component.js
 					fs.writeFileSync(componentPath, newComponentContent, 'utf-8');
-					console.log('Arquivo Component.js atualizado com sucesso!');
+					console.log('Component.js file updated successfully!');
 
-					const errorHandlerPath = path.join(path.dirname(currentFile), 'controller', 'ErrorHandler.js');
+					const errorHandlerPath = path.join(webappPath, 'controller', 'ErrorHandler.js');
 					if (!fs.existsSync(errorHandlerPath)) {
 						const errorHandlerContent = `sap.ui.define([
 							"sap/ui/base/Object",
@@ -182,23 +202,23 @@ function activate(context) {
 						// Escrever o conteúdo no arquivo ErrorHandler.js
 						fs.writeFileSync(errorHandlerPath, errorHandlerContent, 'utf-8');
 
-						console.log('Arquivo ErrorHandler.js criado com sucesso!');
+						console.log('ErrorHandler.js file created successfully!');
 					}
 				}
 				//COMPONENT
 
 				//COMPONENT-PRELOAD.js
-				const componentPreloadPath = path.join(path.dirname(currentFile), 'Component-preload.js');
+				const componentPreloadPath = path.join(webappPath, 'Component-preload.js');
 				if (!fs.existsSync(componentPreloadPath)) {
 					fs.writeFileSync(componentPreloadPath, '');
-					console.log('Arquivo Component-preload.js criado com sucesso!');
+					console.log('Component-preload.js file created successfully!');
 				}
 				//COMPONENT-PRELOAD.js
 
 				// FULL WIDTH NO MANIFEST && app view
 
 				// const appViewPath = path.join(path.dirname(currentFile), 'view', 'App.view.xml');
-				const appViewPath = path.join(path.dirname(currentFile), 'view', 'App.view.xml');
+				const appViewPath = path.join(webappPath, 'view', 'App.view.xml');
 				const appViewContent = fs.readFileSync(appViewPath, 'utf-8');
 
 				// Use uma expressão regular para substituir o conteúdo dentro do elemento <mvc:View>
@@ -220,11 +240,11 @@ function activate(context) {
 				// Salva as alterações no arquivo "App.view.xml"
 				fs.writeFileSync(appViewPath, updatedAppViewContent, 'utf-8');
 
-				console.log('Conteúdo do elemento <mvc:View> atualizado com sucesso!');
+				console.log('<mvc:View> element content updated successfully!');
 
 
 
-				const manifestPath = path.join(path.dirname(currentFile), 'manifest.json');
+				const manifestPath = path.join(webappPath, 'manifest.json');
 				const manifestContent = fs.readFileSync(manifestPath, 'utf-8');
 				const manifestJson = JSON.parse(manifestContent);
 
@@ -239,13 +259,13 @@ function activate(context) {
 				// Salva as alterações no manifesto
 				fs.writeFileSync(manifestPath, JSON.stringify(manifestJson, null, 4));
 
-				console.log('Campo "fullWidth" adicionado ao manifesto com sucesso!');
+				console.log('"fullWidth" field successfully added to the manifest!');
 
 				// FULL WIDTH NO MANIFEST
 
 				//PACKAGE.JSON CONFIG PACKAGE.JSON CONFIG PACKAGE.JSON CONFIG
 				// Obtém o package.json para alterar o start build etc
-				const mainPath = path.dirname(path.dirname(currentFile));
+				const mainPath = path.dirname(webappPath);
 
 				const pkjsonPath = path.join(mainPath, 'package.json');
 
@@ -268,33 +288,56 @@ function activate(context) {
 					// Escreva as alterações no arquivo package.json
 					fs.writeFileSync(pkjsonPath, JSON.stringify(packageJson, null, 2));
 
-					console.log('package.json atualizado com sucesso!');
+					console.log('package.json updated successfully!');
 				} else {
-					console.log('Arquivo package.json não encontrado.');
+					console.log('package.json file not found.');
 				}
 				//PACKAGE.JSON CONFIG PACKAGE.JSON CONFIG PACKAGE.JSON CONFIG
 
 				//pasta Controller pasta Controller pasta Controller pasta Controller 
-				const addController = path.join(path.dirname(currentFile), 'controller', 'BaseController.js');
+				const addController = path.join(webappPath, 'controller', 'BaseController.js');
 
-				var ai18n = ['i18n_pt_PT.properties', "i18n_pt.properties", "i18n_en.properties"];
+				var ai18n = [
+					'i18n_pt.properties', // Português (Portugal)
+					'i18n_en.properties', // Inglês (Estados Unidos)
+					'i18n_es.properties', // Espanhol (Espanha)
+					'i18n_fr.properties', // Francês (França)
+					'i18n_de.properties', // Alemão (Alemanha)
+					'i18n_it.properties', // Italiano (Itália)
+					'i18n_ru.properties', // Russo (Rússia)
+				];
 
-				for (let i = 0; i < ai18n.length; i++) {
-					const element = ai18n[i];
+				var aSelectedi18n = [];
 
-					const addi18n = path.join(path.dirname(currentFile), 'i18n', element);
-
-					if (!fs.existsSync(addi18n)) {
-						const i18nContent = 'errorText=Error Text \n multipleErrorsText=Multiple Errors Text';
-						fs.writeFileSync(addi18n, i18nContent);
+				vscode.window.showQuickPick(ai18n, {
+					placeHolder: 'Select the files you want to add',
+					canPickMany: true
+				}).then(selection => {
+					if (!selection) {
+						return;
 					}
-				}
+
+					const aSelectedi18n = selection;  // Mova a declaração de aSelectedi18n para aqui
+					const selectedFiles = selection.join(', ');
+					vscode.window.showInformationMessage('You selected: ' + selectedFiles);
+
+					// Mova o loop for para dentro do bloco .then
+					for (let i = 0; i < aSelectedi18n.length; i++) {
+						const element = aSelectedi18n[i];
+						const addi18n = path.join(webappPath, 'i18n', element);
+
+						if (!fs.existsSync(addi18n)) {
+							const i18nContent = 'errorText=Error Text \n multipleErrorsText=Multiple Errors Text';
+							fs.writeFileSync(addi18n, i18nContent);
+						}
+					}
+				});
 
 
-				const addFormatter = path.join(path.dirname(currentFile), 'model', 'formatter.js');
+				const addFormatter = path.join(webappPath, 'model', 'formatter.js');
 
 				if (fs.existsSync(addFormatter)) {
-					vscode.window.showInformationMessage("O projeto já está preparado!", 'Obrigado');
+					vscode.window.showInformationMessage("The project is already prepared!", 'Thanks');
 				} else {
 					const formatterPath = path.join(extensionPath, 'resources', 'formatter.txt');
 					const formatterContent = fs.readFileSync(formatterPath, 'utf-8');
@@ -302,13 +345,13 @@ function activate(context) {
 				}
 
 				if (fs.existsSync(addController)) {
-					vscode.window.showInformationMessage("O projeto já está preparado!", 'Obrigado');
+					vscode.window.showInformationMessage("The project is already prepared!", 'Thanks');
 				} else {
 
 					const basePath = path.join(extensionPath, 'resources', 'BaseController.txt');
 					const baseContent = fs.readFileSync(basePath, 'utf-8');
 					// const fileContent = baseContent;
-					const indexPath = path.join(currentFile);
+					const indexPath = path.join(webappPath, 'index.html');
 					const indexContent = fs.readFileSync(indexPath, 'utf-8');
 					const regex = /data-settings='{"id"\s*:\s*"([^"]+)"/;
 					const matches = indexContent.match(regex);
@@ -317,10 +360,10 @@ function activate(context) {
 					const fileContent = baseContent.replace(/zcappmasterdata\.controller\.BaseController/g, `${projectName}.controller.BaseController`);
 					fs.writeFileSync(addController, fileContent);
 
-					vscode.window.showInformationMessage('BaseController Adicionado');
+					vscode.window.showInformationMessage('BaseController.js Added');
 
 
-					const mainController = path.join(path.dirname(currentFile), 'controller', 'Main.controller.js');
+					const mainController = path.join(webappPath, 'controller', 'Main.controller.js');
 					if (fs.existsSync(mainController)) {
 						const mainFileContent = fs.readFileSync(mainController, 'utf-8');
 
@@ -339,11 +382,11 @@ function activate(context) {
 							);
 							fs.writeFileSync(mainController, editedFileContent);
 							// vscode.window.showInformationMessage('Main Controller modificado com sucesso.');
-							vscode.window.showInformationMessage("O projeto já está preparado!", 'Obrigado');
+							vscode.window.showInformationMessage("The project is already prepared!", 'Thanks');
 						}
 					}
 
-					const AppController = path.join(path.dirname(currentFile), 'controller', 'App.controller.js');
+					const AppController = path.join(webappPath, 'controller', 'App.controller.js');
 					if (fs.existsSync(AppController)) {
 						const AppFileContent = fs.readFileSync(AppController, 'utf-8');
 
@@ -361,7 +404,7 @@ function activate(context) {
 								'return BaseController.extend'
 							);
 							fs.writeFileSync(AppController, editedFileContentA);
-							vscode.window.showInformationMessage("O projeto já está preparado!", 'Obrigado');
+							vscode.window.showInformationMessage("The project is already prepared!", 'Thanks');
 						}
 					}
 
@@ -369,7 +412,7 @@ function activate(context) {
 				}
 
 			} catch (error) {
-				vscode.window.showInformationMessage('Abrir o index.html do projeto para correr a extensão.');
+				vscode.window.showInformationMessage('Error, unable to run the command');
 			}
 			// Exibe o caminho completo do diretório
 			// vscode.window.showInformationMessage('Current directory: ' + currentDirectory);
@@ -385,12 +428,12 @@ function activate(context) {
 			try {
 				// Solicita ao usuário o nome da view
 				const viewName = await vscode.window.showInputBox({
-					title: 'Nova View',
-					prompt: 'Digite o nome da nova view (sem a extensão)',
-					placeHolder: 'Nome da view',
+					title: 'New View',
+					prompt: 'Enter the name of the new view (without the extension)',
+					placeHolder: 'View name',
 					validateInput: (value) => {
 						if (!value) {
-							return 'O nome da view não pode estar vazio';
+							return 'View name cannot be empty';
 						}
 						return null;
 					},
@@ -400,8 +443,10 @@ function activate(context) {
 					return; // O usuário cancelou a operação
 				}
 
-				const ctFile = activeEditor.document.uri.fsPath;
-				const cDirectory = path.dirname(ctFile);
+				var webappPath = checkProjectDirectory();
+
+				// const ctFile = activeEditor.document.uri.fsPath;
+				const cDirectory = webappPath;
 				const projectName = path.basename(path.dirname(cDirectory));
 
 				// Cria a nova view
@@ -476,13 +521,14 @@ function activate(context) {
 
 		if (activeEditor) {
 			// var confirmExits = false;
-			const ctFile = activeEditor.document.uri.fsPath;
+			// const ctFile = activeEditor.document.uri.fsPath;
 			//WEBAPP
-			const projectName = path.dirname(ctFile);
+			var webappPath = checkProjectDirectory();
+			const projectName = webappPath;
 			const i18nTarget = await vscode.window.showInputBox({
-				title: 'i18n para preencher',
-				prompt: 'Digite o nome do i18n para preencher (ex: i18n_pt_PT)',
-				placeHolder: 'i18n para preencher',
+				title: 'i18n to fill',
+				prompt: 'Enter the i18n name to translate (ex: i18n)',
+				placeHolder: 'i18n to fill',
 				validateInput: (value) => {
 					if (!value) {
 						return 'i18n error';
@@ -497,14 +543,14 @@ function activate(context) {
 			// const finali18nTarget = path.join(projectName, "i18n", i18nTarget + ".properties");
 			const pathi18nEdit = path.join(projectName, "i18n", i18nTarget + ".properties");
 			if (!fs.existsSync(pathi18nEdit)) {
-				vscode.window.showErrorMessage('O i18n introduzido não existe, execute o SAPUI5 INITIAL CONFIG para gerar.');
+				vscode.window.showErrorMessage('The introduced i18n does not exist, run SAPUI5 ADD I18N\'S to generate.');
 				return;
 			}
 
 			const i18nMain = await vscode.window.showInputBox({
-				title: 'i18n para traduzir ',
-				prompt: 'Digite o nome do i18n para traduzir (ex: i18n_pt_PT)',
-				placeHolder: 'i18n para traduzir',
+				title: 'i18n to translate',
+				prompt: 'Enter the name of the i18n to fill in (ex: i18n_pt_PT)',
+				placeHolder: 'i18n to translate',
 				validateInput: (value) => {
 					if (!value) {
 						return 'i18n error';
@@ -515,7 +561,7 @@ function activate(context) {
 
 			const pathi18nMain = path.join(projectName, "i18n", i18nMain + ".properties");
 			if (!fs.existsSync(pathi18nMain)) {
-				vscode.window.showErrorMessage('O i18n introduzido não existe, execute o SAPUI5 INITIAL CONFIG para gerar.');
+				vscode.window.showErrorMessage('The introduced i18n does not exist, run SAPUI5 ADD I18N\'S to generate.');
 				return;
 			}
 
@@ -579,17 +625,56 @@ function activate(context) {
 
 	});
 
+	let addI18nFiles = vscode.commands.registerCommand('initial-config-sapui5.addI18nFiles', async function () {
+		var webappPath = checkProjectDirectory();
+
+		var ai18n = [
+			'i18n_pt.properties', // Português (Portugal)
+			'i18n_en.properties', // Inglês (Estados Unidos)
+			'i18n_es.properties', // Espanhol (Espanha)
+			'i18n_fr.properties', // Francês (França)
+			'i18n_de.properties', // Alemão (Alemanha)
+			'i18n_it.properties', // Italiano (Itália)
+			'i18n_ru.properties', // Russo (Rússia)
+		];
+
+		vscode.window.showQuickPick(ai18n, {
+			placeHolder: 'Select the files you want to add',
+			canPickMany: true
+		}).then(selection => {
+			if (!selection) {
+				return;
+			}
+
+			const selectedFiles = selection.join(', ');
+			vscode.window.showInformationMessage('You selected: ' + selectedFiles);
+
+			for (let i = 0; i < selection.length; i++) {  // Use "selection" em vez de "aSelectedi18n"
+				const element = selection[i];  // Use "selection" em vez de "aSelectedi18n"
+
+				const addi18n = path.join(webappPath, 'i18n', element);
+
+				if (!fs.existsSync(addi18n)) {
+					const i18nContent = 'errorText=Error Text \n multipleErrorsText=Multiple Errors Text';
+					fs.writeFileSync(addi18n, i18nContent);
+				}
+			}
+		});
+	});
+
+
 	let getWordsNotDeclared = vscode.commands.registerCommand('initial-config-sapui5.getWordsNotDeclared', async function () {
 		const activeEditor = vscode.window.activeTextEditor;
 
 		if (activeEditor) {
 			try {
 				// Obtém o caminho completo do arquivo do editor de texto ativo
-				const currentFile = activeEditor.document.uri.fsPath;
+				// const currentFile = activeEditor.document.uri.fsPath;
 				// Obtém a pasta da extensão para ir buscar os resources
 				// const extensionPath = context.extensionPath;
 				// Obtém o a pasta das views
-				const viewsPath = path.join(path.dirname(currentFile), 'view');
+				var webappPath = checkProjectDirectory();
+				const viewsPath = path.join(webappPath, 'view');
 				const files = fs.readdirSync(viewsPath);
 				const i18nRegex = /{i18n>(\w+)}/g;
 				const missingWords = [];
@@ -604,7 +689,7 @@ function activate(context) {
 					}
 				});
 
-				const i18nPath = path.join(path.dirname(currentFile), 'i18n', 'i18n.properties');
+				const i18nPath = path.join(webappPath, 'i18n', 'i18n.properties');
 				const i18nContent = fs.readFileSync(i18nPath, 'utf8');
 
 				const lines = i18nContent.split('\n');
@@ -618,6 +703,7 @@ function activate(context) {
 					}
 				});
 
+
 				missingWords.forEach(word => {
 					if (!wordsi18n.includes(word)) {
 						const line = `${word} = ${word}`;
@@ -629,7 +715,7 @@ function activate(context) {
 				const newContent = lines.join('\n');
 				fs.writeFileSync(i18nPath, newContent, 'utf8');
 
-				console.log('Palavras adicionadas com sucesso!');
+				console.log('Words added in i18n.properties successfully!');
 
 			} catch (error) {
 				return;
@@ -637,11 +723,12 @@ function activate(context) {
 		}
 	});
 
-
 	context.subscriptions.push(disposable);
 	context.subscriptions.push(createView);
 	context.subscriptions.push(translatei18n);
 	context.subscriptions.push(getWordsNotDeclared);
+	context.subscriptions.push(addI18nFiles);
+	// context.subscriptions.push(insertConsoleLog);
 }
 
 // This method is called when your extension is deactivated

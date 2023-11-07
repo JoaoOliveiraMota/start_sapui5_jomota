@@ -1,9 +1,9 @@
 {
   "name": "initial-config-sapui5",
   "displayName": "SAPUI5 Initial Config",
-  "description": "Simplified Setup for SAPUI5 Developmen",
+  "description": "Simplified Setup for SAPUI5 Development",
   "icon": "images/appIcon.png",
-  "version": "0.0.48",
+  "version": "0.0.62",
   "publisher": "JoaoMota",
   "repository": {
     "type": "git",
@@ -34,8 +34,13 @@
       {
         "command": "initial-config-sapui5.getWordsNotDeclared",
         "title": "SAPUI5 Find Missing i18n Declarations"
+      },
+      {
+        "command": "initial-config-sapui5.addI18nFiles",
+        "title": "SAPUI5 Add i18n Files"
       }
     ]
+    
   },
   "scripts": {
     "lint": "eslint .",
